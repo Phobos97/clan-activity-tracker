@@ -27,10 +27,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @Slf4j
@@ -73,7 +70,6 @@ public class ClanActivityTrackerPlugin extends Plugin {
 		if (clanSettings == null){
 			return;
 		}
-
 		String pathname = BASE_DIRECTORY + event.getClanChannel().getName().replaceAll(" ", "_") + config.fileSuffix();
 		createFile(pathname);
 
@@ -101,7 +97,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 				csvPrinter.printRecord(rsn,
 						Objects.requireNonNull(clanSettings.titleForRank(memberList.get(index).getRank())).getName(),
 						record.get(2), record.get(3),
-						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd"));
+						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 				updatedRsns.add(rsn);
 			}
 			// if member not currently online, don't change data
@@ -115,7 +111,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 			if (!updatedRsns.contains(rsn)) {
 				csvPrinter.printRecord(cleanRsn(member.getName()),
 						Objects.requireNonNull(clanSettings.titleForRank(member.getRank())).getName(), 0,
-						"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd"));
+						"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 			}
 		}
 
@@ -138,7 +134,6 @@ public class ClanActivityTrackerPlugin extends Plugin {
 		if (clanSettings == null){
 			return;
 		}
-
 		String pathname = BASE_DIRECTORY + event.getClanChannel().getName().replaceAll(" ", "_") + config.fileSuffix();
 		createFile(pathname);
 
@@ -159,7 +154,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 				csvPrinter.printRecord(record.get(0),
 						Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(),
 						record.get(2), record.get(3),
-						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd"));
+						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 				found = true;
 			}
 			else{
@@ -169,7 +164,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 		if (!found){
 			csvPrinter.printRecord(rsn,
 					Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(), 0,
-					"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd"));
+					"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 		}
 		csvPrinter.flush();
 		csvPrinter.close();
@@ -185,7 +180,6 @@ public class ClanActivityTrackerPlugin extends Plugin {
 		if (friendsChatManager == null){
 			return;
 		}
-
 
 		String pathname = BASE_DIRECTORY + friendsChatManager.getName().replaceAll(" ", "_") + config.fileSuffix();
 		createFile(pathname);
@@ -207,7 +201,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 				csvPrinter.printRecord(record.get(0),
 						event.getMember().getRank(),
 						record.get(2), record.get(3),
-						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd"));
+						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 				found = true;
 			}
 			else{
@@ -217,7 +211,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 		if (!found){
 			csvPrinter.printRecord(rsn,
 					event.getMember().getRank(), 0,
-					"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd"));
+					"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 		}
 
 		csvPrinter.flush();
