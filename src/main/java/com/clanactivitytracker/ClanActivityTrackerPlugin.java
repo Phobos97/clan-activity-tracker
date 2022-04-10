@@ -11,6 +11,7 @@ import net.runelite.api.clan.ClanChannelMember;
 import net.runelite.api.clan.ClanMember;
 import net.runelite.api.clan.ClanSettings;
 import net.runelite.api.events.*;
+import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -38,7 +39,7 @@ import java.util.Objects;
 		description = "Track activity of clan members."
 )
 public class ClanActivityTrackerPlugin extends Plugin {
-	private static final String BASE_DIRECTORY = System.getProperty("user.home") + "/.runelite/clan-activity-tracker/";
+	private static final String BASE_DIRECTORY = RuneLite.RUNELITE_DIR + "/clan-activity-tracker/";
 
 	private static final String[] HEADERS = { "rsn", "rank", "message count", "last message timestamp", "last seen online"};
 
