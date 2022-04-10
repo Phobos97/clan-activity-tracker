@@ -10,7 +10,8 @@ public interface ClanActivityTrackerConfig extends Config
 {
 	enum ChatTrackType {
 		CLAN_CHAT,
-		FRIEND_CHAT
+		FRIEND_CHAT,
+		BOTH
 	}
 
 	@ConfigItem(
@@ -18,11 +19,7 @@ public interface ClanActivityTrackerConfig extends Config
 		name = "File suffix",
 		description = "Last part of filename to save clan log to. First part of the file name will be the name of your clan/ friend chat."
 	)
-	default String fileSuffix()
-	{
-		return "_Log1.csv";
-	}
-
+	default String fileSuffix() { return "_Log1.csv"; }
 
 	@ConfigItem(
 			keyName = "chattracktype",
@@ -33,4 +30,12 @@ public interface ClanActivityTrackerConfig extends Config
 	{
 		return ChatTrackType.CLAN_CHAT;
 	}
+
+	@ConfigItem(
+			keyName = "rsnspecificlog",
+			name = "Use rsn in filename",
+			description = "Advised for playing on multiple clients. Stops double counting of messages and some more" +
+					" inconsistencies when multilogging. Each account will generate its own log file."
+	)
+	default boolean rsnSpecificLog() { return false; }
 }

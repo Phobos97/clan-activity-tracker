@@ -53,7 +53,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 	@Subscribe()
 	public void onClanChannelChanged(ClanChannelChanged event) throws IOException {
-		if (config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.CLAN_CHAT){
+		if (config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.CLAN_CHAT && config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.BOTH){
 			return;
 		}
 
@@ -70,7 +70,13 @@ public class ClanActivityTrackerPlugin extends Plugin {
 		if (clanSettings == null){
 			return;
 		}
-		String pathname = BASE_DIRECTORY + event.getClanChannel().getName().replaceAll(" ", "_") + config.fileSuffix();
+
+		String localRsn = "";
+		if (config.rsnSpecificLog()) {
+			localRsn = "_" + Objects.requireNonNull(client.getLocalPlayer()).getName();
+		}
+
+		String pathname = BASE_DIRECTORY + event.getClanChannel().getName().replaceAll(" ", "_") + localRsn + config.fileSuffix();
 		createFile(pathname);
 
 		Iterable<CSVRecord> records = readAll(pathname);
@@ -121,7 +127,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 	@Subscribe()
 	public void onClanMemberJoined(ClanMemberJoined event) throws IOException {
-		if (config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.CLAN_CHAT){
+		if (config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.CLAN_CHAT  && config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.BOTH){
 			return;
 		}
 
@@ -134,7 +140,13 @@ public class ClanActivityTrackerPlugin extends Plugin {
 		if (clanSettings == null){
 			return;
 		}
-		String pathname = BASE_DIRECTORY + event.getClanChannel().getName().replaceAll(" ", "_") + config.fileSuffix();
+
+		String localRsn = "";
+		if (config.rsnSpecificLog()) {
+			localRsn = "_" + Objects.requireNonNull(client.getLocalPlayer()).getName();
+		}
+
+		String pathname = BASE_DIRECTORY + event.getClanChannel().getName().replaceAll(" ", "_") + localRsn + config.fileSuffix();
 		createFile(pathname);
 
 		Iterable<CSVRecord> records = readAll(pathname);
@@ -172,7 +184,7 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 	@Subscribe()
 	public void onFriendsChatMemberJoined(FriendsChatMemberJoined event) throws IOException {
-		if (config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.FRIEND_CHAT){
+		if (config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.FRIEND_CHAT  && config.chatTrackType() != ClanActivityTrackerConfig.ChatTrackType.BOTH){
 			return;
 		}
 
@@ -181,7 +193,12 @@ public class ClanActivityTrackerPlugin extends Plugin {
 			return;
 		}
 
-		String pathname = BASE_DIRECTORY + friendsChatManager.getName().replaceAll(" ", "_") + config.fileSuffix();
+		String localRsn = "";
+		if (config.rsnSpecificLog()) {
+			localRsn = "_" + Objects.requireNonNull(client.getLocalPlayer()).getName();
+		}
+
+		String pathname = BASE_DIRECTORY + friendsChatManager.getName().replaceAll(" ", "_") + localRsn + config.fileSuffix();
 		createFile(pathname);
 
 		Iterable<CSVRecord> records = readAll(pathname);
@@ -221,20 +238,28 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 	@Subscribe()
 	public void onChatMessage(ChatMessage chatMessage) throws IOException {
-
-		ChatMessageType chatTypeToTrack = ChatMessageType.UNKNOWN;
+		List<ChatMessageType> chatTypesToTrack = new ArrayList<>();
 		switch (config.chatTrackType()) {
 			case CLAN_CHAT:
-				chatTypeToTrack = ChatMessageType.CLAN_CHAT;
+				chatTypesToTrack.add(ChatMessageType.CLAN_CHAT);
 				break;
 			case FRIEND_CHAT:
-				chatTypeToTrack = ChatMessageType.FRIENDSCHAT;
+				chatTypesToTrack.add(ChatMessageType.FRIENDSCHAT);
+				break;
+			case BOTH:
+				chatTypesToTrack.add(ChatMessageType.CLAN_CHAT);
+				chatTypesToTrack.add(ChatMessageType.FRIENDSCHAT);
 				break;
 		}
 
 
-		if (chatMessage.getType() == chatTypeToTrack) {
-			String pathname = BASE_DIRECTORY + chatMessage.getSender().replaceAll("[  ]", "_") + config.fileSuffix();
+		if (chatTypesToTrack.contains(chatMessage.getType())) {
+			String localRsn = "";
+			if (config.rsnSpecificLog()) {
+				localRsn = "_" + Objects.requireNonNull(client.getLocalPlayer()).getName();
+			}
+
+			String pathname = BASE_DIRECTORY + chatMessage.getSender().replaceAll("[  ]", "_") + localRsn + config.fileSuffix();
 			createFile(pathname);
 
 			String rsn = cleanRsn(chatMessage.getName());
