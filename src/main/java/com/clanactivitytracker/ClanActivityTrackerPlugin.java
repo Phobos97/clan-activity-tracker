@@ -81,48 +81,53 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 		Iterable<CSVRecord> records = readAll(pathname);
 
-		BufferedWriter writer = Files.newBufferedWriter(
-				Paths.get(pathname),
-				StandardOpenOption.TRUNCATE_EXISTING);
-		CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-				.withHeader(HEADERS));
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(
+					Paths.get(pathname),
+					StandardOpenOption.WRITE);
+			CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+					.withHeader(HEADERS));
 
-		List<ClanChannelMember> memberList = event.getClanChannel().getMembers();
-		List<String> clanRsns = new ArrayList<String>();
-		List<String> updatedRsns = new ArrayList<String>();
-		for (ClanChannelMember member : memberList) {
-			clanRsns.add(cleanRsn(member.getName()));
-		}
+			List<ClanChannelMember> memberList = event.getClanChannel().getMembers();
+			List<String> clanRsns = new ArrayList<String>();
+			List<String> updatedRsns = new ArrayList<String>();
+			for (ClanChannelMember member : memberList) {
+				clanRsns.add(cleanRsn(member.getName()));
+			}
 
-		for (CSVRecord record : records){
-			// if recorded member is currently online
-			String rsn = record.get(0);
-			if (clanRsns.contains(rsn)){
-				int index = clanRsns.indexOf(rsn);
-				// update rank and last seen online time
-				csvPrinter.printRecord(rsn,
-						Objects.requireNonNull(clanSettings.titleForRank(memberList.get(index).getRank())).getName(),
-						record.get(2), record.get(3),
-						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-				updatedRsns.add(rsn);
+			for (CSVRecord record : records) {
+				// if recorded member is currently online
+				String rsn = record.get(0);
+				if (clanRsns.contains(rsn)) {
+					int index = clanRsns.indexOf(rsn);
+					// update rank and last seen online time
+					csvPrinter.printRecord(rsn,
+							Objects.requireNonNull(clanSettings.titleForRank(memberList.get(index).getRank())).getName(),
+							record.get(2), record.get(3),
+							formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
+					updatedRsns.add(rsn);
+				}
+				// if member not currently online, don't change data
+				else {
+					csvPrinter.printRecord(record);
+				}
 			}
-			// if member not currently online, don't change data
-			else{
-				csvPrinter.printRecord(record);
+			// if online player has not been recorded yet create new entry
+			for (ClanChannelMember member : memberList) {
+				String rsn = cleanRsn(member.getName());
+				if (!updatedRsns.contains(rsn)) {
+					csvPrinter.printRecord(cleanRsn(member.getName()),
+							Objects.requireNonNull(clanSettings.titleForRank(member.getRank())).getName(), 0,
+							"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
+				}
 			}
-		}
-		// if online player has not been recorded yet create new entry
-		for (ClanChannelMember member : memberList) {
-			String rsn = cleanRsn(member.getName());
-			if (!updatedRsns.contains(rsn)) {
-				csvPrinter.printRecord(cleanRsn(member.getName()),
-						Objects.requireNonNull(clanSettings.titleForRank(member.getRank())).getName(), 0,
-						"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-			}
-		}
 
-		csvPrinter.flush();
-		csvPrinter.close();
+			csvPrinter.flush();
+			csvPrinter.close();
+
+		} catch (IOException IOE) {
+			log.debug("Clan Activity Tracker encountered an IO exception, likely since the .CSV file was open.");
+		}
 	}
 
 	@Subscribe()
@@ -151,35 +156,40 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 		Iterable<CSVRecord> records = readAll(pathname);
 
-		BufferedWriter writer = Files.newBufferedWriter(
-				Paths.get(pathname),
-				StandardOpenOption.TRUNCATE_EXISTING);
-		CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-				.withHeader(HEADERS));
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(
+					Paths.get(pathname),
+					StandardOpenOption.WRITE);
+			CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+					.withHeader(HEADERS));
 
-		String rsn = cleanRsn(event.getClanMember().getName());
+			String rsn = cleanRsn(event.getClanMember().getName());
 
-		boolean found = false;
-		for (CSVRecord record : records){
-			if (rsn.equals(record.get(0))){
-				// update rank and last seen online time
-				csvPrinter.printRecord(record.get(0),
-						Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(),
-						record.get(2), record.get(3),
-						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-				found = true;
+			boolean found = false;
+			for (CSVRecord record : records) {
+				if (rsn.equals(record.get(0))) {
+					// update rank and last seen online time
+					csvPrinter.printRecord(record.get(0),
+							Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(),
+							record.get(2), record.get(3),
+							formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
+					found = true;
+				}
+				else {
+					csvPrinter.printRecord(record);
+				}
 			}
-			else{
-				csvPrinter.printRecord(record);
+			if (!found) {
+				csvPrinter.printRecord(rsn,
+						Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(), 0,
+						"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 			}
+			csvPrinter.flush();
+			csvPrinter.close();
+
+		} catch (IOException IOE) {
+			log.debug("Clan Activity Tracker encountered an IO exception, likely since the .CSV file was open.");
 		}
-		if (!found){
-			csvPrinter.printRecord(rsn,
-					Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(), 0,
-					"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-		}
-		csvPrinter.flush();
-		csvPrinter.close();
 	}
 
 	@Subscribe()
@@ -203,38 +213,42 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 		Iterable<CSVRecord> records = readAll(pathname);
 
-		BufferedWriter writer = Files.newBufferedWriter(
-				Paths.get(pathname),
-				StandardOpenOption.TRUNCATE_EXISTING);
-		CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-				.withHeader(HEADERS));
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(
+					Paths.get(pathname),
+					StandardOpenOption.WRITE);
+			CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+					.withHeader(HEADERS));
 
-		String rsn = cleanRsn(event.getMember().getName());
+			String rsn = cleanRsn(event.getMember().getName());
 
-		boolean found = false;
-		for (CSVRecord record : records){
-			if (rsn.equals(record.get(0))){
-				// update rank and last seen online time
-				csvPrinter.printRecord(record.get(0),
-						event.getMember().getRank(),
-						record.get(2), record.get(3),
-						formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-				found = true;
+			boolean found = false;
+			for (CSVRecord record : records) {
+				if (rsn.equals(record.get(0))) {
+					// update rank and last seen online time
+					csvPrinter.printRecord(record.get(0),
+							event.getMember().getRank(),
+							record.get(2), record.get(3),
+							formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
+					found = true;
+				}
+				else {
+					csvPrinter.printRecord(record.get(0), record.get(1), record.get(2), record.get(3), record.get(4));
+				}
 			}
-			else{
-				csvPrinter.printRecord(record.get(0), record.get(1), record.get(2), record.get(3), record.get(4));
+			if (!found) {
+				csvPrinter.printRecord(rsn,
+						event.getMember().getRank(), 0,
+						"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
 			}
-		}
-		if (!found){
-			csvPrinter.printRecord(rsn,
-					event.getMember().getRank(), 0,
-					"-", formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-		}
 
-		csvPrinter.flush();
-		csvPrinter.close();
+			csvPrinter.flush();
+			csvPrinter.close();
+
+		} catch (IOException IOE) {
+			log.debug("Clan Activity Tracker encountered an IO exception, likely since the .CSV file was open.");
+		}
 	}
-
 
 	@Subscribe()
 	public void onChatMessage(ChatMessage chatMessage) throws IOException {
@@ -266,25 +280,29 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 			Iterable<CSVRecord> records = readAll(pathname);
 
-			BufferedWriter writer = Files.newBufferedWriter(
-					Paths.get(pathname),
-					StandardOpenOption.TRUNCATE_EXISTING);
-			CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-					.withHeader(HEADERS));
+			try {
+				BufferedWriter writer = Files.newBufferedWriter(
+						Paths.get(pathname),
+						StandardOpenOption.WRITE);
+				CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+						.withHeader(HEADERS));
 
-			for (CSVRecord record : records) {
-				if (record.get("rsn").equals(rsn)) {
-					int newcount = Integer.parseInt(record.get("message count")) + 1;
-					csvPrinter.printRecord(record.get(0), record.get(1), newcount,
-							formatTimestamp(chatMessage.getTimestamp(), "yyyy-MM-dd HH:mm:ss"), record.get(4));
+				for (CSVRecord record : records) {
+					if (record.get("rsn").equals(rsn)) {
+						int newcount = Integer.parseInt(record.get("message count")) + 1;
+						csvPrinter.printRecord(record.get(0), record.get(1), newcount,
+								formatTimestamp(chatMessage.getTimestamp(), "yyyy-MM-dd HH:mm:ss"), record.get(4));
+					}
+					else {
+						csvPrinter.printRecord(record.get(0), record.get(1), record.get(2), record.get(3), record.get(4));
+					}
 				}
-				else {
-					csvPrinter.printRecord(record.get(0), record.get(1), record.get(2), record.get(3), record.get(4));
-				}
+
+				csvPrinter.flush();
+				csvPrinter.close();
+			} catch (IOException IOE) {
+				log.debug("Clan Activity Tracker encountered an IO exception, likely since the .CSV file was open.");
 			}
-
-			csvPrinter.flush();
-			csvPrinter.close();
 		}
 	}
 
