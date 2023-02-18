@@ -97,19 +97,21 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 			for (CSVRecord record : records) {
 				// if recorded member is currently online
-				String rsn = record.get(0);
-				if (clanRsns.contains(rsn)) {
-					int index = clanRsns.indexOf(rsn);
-					// update rank and last seen online time
-					csvPrinter.printRecord(rsn,
-							Objects.requireNonNull(clanSettings.titleForRank(memberList.get(index).getRank())).getName(),
-							record.get(2), record.get(3),
-							formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-					updatedRsns.add(rsn);
-				}
-				// if member not currently online, don't change data
-				else {
-					csvPrinter.printRecord(record);
+				if (record.size() == 5) {
+					String rsn = record.get(0);
+					if (clanRsns.contains(rsn)) {
+						int index = clanRsns.indexOf(rsn);
+						// update rank and last seen online time
+						csvPrinter.printRecord(rsn,
+								Objects.requireNonNull(clanSettings.titleForRank(memberList.get(index).getRank())).getName(),
+								record.get(2), record.get(3),
+								formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
+						updatedRsns.add(rsn);
+					}
+					// if member not currently online, don't change data
+					else {
+						csvPrinter.printRecord(record);
+					}
 				}
 			}
 			// if online player has not been recorded yet create new entry
@@ -167,16 +169,18 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 			boolean found = false;
 			for (CSVRecord record : records) {
-				if (rsn.equals(record.get(0))) {
-					// update rank and last seen online time
-					csvPrinter.printRecord(record.get(0),
-							Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(),
-							record.get(2), record.get(3),
-							formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-					found = true;
-				}
-				else {
-					csvPrinter.printRecord(record);
+				if (record.size() == 5) {
+					if (rsn.equals(record.get(0))) {
+						// update rank and last seen online time
+						csvPrinter.printRecord(record.get(0),
+								Objects.requireNonNull(clanSettings.titleForRank(event.getClanMember().getRank())).getName(),
+								record.get(2), record.get(3),
+								formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
+						found = true;
+					}
+					else {
+						csvPrinter.printRecord(record);
+					}
 				}
 			}
 			if (!found) {
@@ -224,16 +228,18 @@ public class ClanActivityTrackerPlugin extends Plugin {
 
 			boolean found = false;
 			for (CSVRecord record : records) {
-				if (rsn.equals(record.get(0))) {
-					// update rank and last seen online time
-					csvPrinter.printRecord(record.get(0),
-							event.getMember().getRank(),
-							record.get(2), record.get(3),
-							formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
-					found = true;
-				}
-				else {
-					csvPrinter.printRecord(record.get(0), record.get(1), record.get(2), record.get(3), record.get(4));
+				if (record.size() == 5) {
+					if (rsn.equals(record.get(0))) {
+						// update rank and last seen online time
+						csvPrinter.printRecord(record.get(0),
+								event.getMember().getRank(),
+								record.get(2), record.get(3),
+								formatTimestamp((int) Instant.now().getEpochSecond(), "yyyy-MM-dd HH:mm:ss"));
+						found = true;
+					}
+					else {
+						csvPrinter.printRecord(record);
+					}
 				}
 			}
 			if (!found) {
@@ -288,13 +294,15 @@ public class ClanActivityTrackerPlugin extends Plugin {
 						.withHeader(HEADERS));
 
 				for (CSVRecord record : records) {
-					if (record.get("rsn").equals(rsn)) {
-						int newcount = Integer.parseInt(record.get("message count")) + 1;
-						csvPrinter.printRecord(record.get(0), record.get(1), newcount,
-								formatTimestamp(chatMessage.getTimestamp(), "yyyy-MM-dd HH:mm:ss"), record.get(4));
-					}
-					else {
-						csvPrinter.printRecord(record.get(0), record.get(1), record.get(2), record.get(3), record.get(4));
+					if (record.size() == 5) {
+						if (record.get("rsn").equals(rsn)) {
+							int newcount = Integer.parseInt(record.get("message count")) + 1;
+							csvPrinter.printRecord(record.get(0), record.get(1), newcount,
+									formatTimestamp(chatMessage.getTimestamp(), "yyyy-MM-dd HH:mm:ss"), record.get(4));
+						}
+						else {
+							csvPrinter.printRecord(record);
+						}
 					}
 				}
 
