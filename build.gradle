@@ -27,10 +27,10 @@ dependencies {
 
 group = 'com.clanactivitytracker'
 version = '1.0-SNAPSHOT'
-sourceCompatibility = '1.8'
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
+	options.release.set(11)
 }
 
 
