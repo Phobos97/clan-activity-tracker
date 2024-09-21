@@ -44,7 +44,8 @@ The data file is named using the clan or friends chat name with spaces replaced 
 
 Below is an example in `Excel`, of what the data looks like after it has been recorded:
 
-![Example of recorded data in Excel](../clan-activity-tracker/CAT_ExampleImage.png)</br>
+![Example of recorded data in Excel](CAT_ExampleImage.png)</br>
+</br>
 *Player names are redacted for privacy reasons.*
 
 </br>
