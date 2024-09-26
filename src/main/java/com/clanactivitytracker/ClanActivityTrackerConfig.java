@@ -1,6 +1,5 @@
 package com.clanactivitytracker;
 
-import net.runelite.api.ChatMessageType;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -37,5 +36,5 @@ public interface ClanActivityTrackerConfig extends Config
 			description = "Advised for playing on multiple clients. Stops double counting of messages and some more" +
 					" inconsistencies when multilogging. Each account will generate its own log file."
 	)
-	default boolean rsnSpecificLog() { return false; }
+	default boolean rsnSpecificLog() { return true; }
 }

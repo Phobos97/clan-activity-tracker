@@ -1,6 +1,5 @@
 package com.clanactivitytracker;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 
@@ -8,7 +7,6 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.clan.ClanChannelMember;
-import net.runelite.api.clan.ClanMember;
 import net.runelite.api.clan.ClanSettings;
 import net.runelite.api.events.*;
 import net.runelite.client.RuneLite;
